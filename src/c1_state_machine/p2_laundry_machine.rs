@@ -40,7 +40,69 @@ impl StateMachine for ClothesMachine {
     type Transition = ClothesAction;
 
     fn next_state(starting_state: &ClothesState, t: &ClothesAction) -> ClothesState {
-        todo!("Exercise 3")
+        match starting_state {
+            ClothesState::Clean(x) => { match t {
+                ClothesAction::Wear => {
+                    if *x == 1 {
+                        return ClothesState::Tattered;
+                    }
+                    return ClothesState::Dirty(*x-1);
+                    },
+                ClothesAction::Wash => {
+                    if *x == 1 {
+                        return ClothesState::Tattered;
+                    }
+                    return ClothesState::Wet(*x-1);
+                    },
+                ClothesAction::Dry => {
+                    if *x == 1 {
+                        return ClothesState::Tattered;
+                    }
+                    return ClothesState::Clean(*x-1);
+                    },
+            }},
+            ClothesState::Wet(x) => { match t {
+                ClothesAction::Wear => {
+                    if *x == 1 {
+                        return ClothesState::Tattered;
+                    }
+                    return ClothesState::Dirty(*x-1);
+                    },
+                ClothesAction::Wash => {
+                    if *x == 1 {
+                        return ClothesState::Tattered;
+                    }
+                    return ClothesState::Wet(*x-1);
+                    },
+                ClothesAction::Dry => {
+                    if *x == 1 {
+                        return ClothesState::Tattered;
+                    }
+                    return ClothesState::Clean(*x-1);
+                    },
+            }},
+            ClothesState::Dirty(x) => { match t {
+                ClothesAction::Wear => {
+                    if *x == 1 {
+                        return ClothesState::Tattered;
+                    }
+                    return ClothesState::Dirty(*x-1);
+                    },
+                ClothesAction::Wash => {
+                if *x == 1 {
+                    return ClothesState::Tattered;
+                }
+                return ClothesState::Wet(*x-1);
+                },
+                ClothesAction::Dry => {
+                    if *x == 1 {
+                        return ClothesState::Tattered;
+                    }
+                    return ClothesState::Dirty(*x-1);
+                    },
+            }},
+            _ => return ClothesState::Tattered,
+        }
     }
 }
 

@@ -58,7 +58,14 @@ impl StateMachine for Atm {
     type Transition = Action;
 
     fn next_state(starting_state: &Self::State, t: &Self::Transition) -> Self::State {
-        todo!("Exercise 4")
+/*         match starting_state.expected_pin_hash {
+            Auth::Waiting => {
+                match t {
+                    Action::SwipeCard(x) => Auth::Waiting
+                }
+            }
+        } */
+        todo!()
     }
 }
 
