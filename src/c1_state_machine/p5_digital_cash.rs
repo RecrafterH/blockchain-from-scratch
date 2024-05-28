@@ -94,7 +94,86 @@ impl StateMachine for DigitalCashSystem {
     type Transition = CashTransaction;
 
     fn next_state(starting_state: &Self::State, t: &Self::Transition) -> Self::State {
-        todo!("Exercise 1")
+        let mut new_state = starting_state.clone();
+
+        match t {
+            CashTransaction::Mint { minter, amount } => {
+                let new_bill = Bill {
+                    owner: *minter,
+                    amount: *amount,
+                    serial: new_state.next_serial(),
+                };
+                new_state.add_bill(new_bill);
+            }
+            CashTransaction::Transfer { spends, receives } => {
+                let spends_amount: u64 = spends.iter().map(|x| x.amount).sum();
+
+                let receives_amount: u64 = match receives.iter().map(|x| x.amount).try_fold(0u64, |acc, x| acc.checked_add(x)) {
+                    Some(sum) => sum,
+                    None => return starting_state.clone(), 
+                };
+
+                if spends.is_empty() {
+                    return starting_state.clone();
+                }
+
+                if receives.is_empty() {
+                    let mut state = starting_state.clone();
+                    state.set_serial(starting_state.next_serial());
+                    return state;
+                }
+
+                if receives_amount > spends_amount {
+                    return starting_state.clone();
+                }
+
+                for (index, bill) in receives.iter().enumerate() {
+                    if bill.amount == 0 || bill.serial != starting_state.next_serial() + index as u64 {
+                        return starting_state.clone();
+                    }
+                }
+
+                let mut seen_serials = std::collections::HashSet::new();
+                for bill in receives {
+                    if !seen_serials.insert(bill.serial) {
+                        return starting_state.clone();
+                    }
+                }
+
+                let spends_set: std::collections::HashSet<_> = spends.iter().collect();
+                for bill in receives {
+                    if spends_set.contains(bill) {
+                        return starting_state.clone();
+                    }
+                }
+
+                for bill in spends {
+                    if !new_state.bills.contains(bill) {
+                        return starting_state.clone();
+                    }
+                }
+
+                if spends_amount < receives_amount {
+                    return starting_state.clone();
+                }
+
+                for bill in spends {
+                    if !new_state.bills.remove(bill) {
+                        return starting_state.clone();
+                    }
+                }
+
+                for (index, bill) in receives.iter().enumerate() {
+                    new_state.add_bill(Bill {
+                        owner: bill.owner,
+                        amount: bill.amount,
+                        serial: starting_state.next_serial() + index as u64,
+                    });
+                }
+            }
+        }
+
+        new_state
     }
 }
 
